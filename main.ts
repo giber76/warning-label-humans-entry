@@ -10,10 +10,18 @@ const LINE =
 
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "output";
 
-// The gate allows 1-160 characters. Fail loudly instead of writing an
-// invalid entry if the line ever grows past the limit.
-if ([...LINE].length > 160 || [...LINE].length < 1) {
-  throw new Error(`warning line is ${[...LINE].length} characters, must be 1-160`);
+// The gate allows 1-160 characters, a single line, not only whitespace, and
+// a printed-label form starting with "WARNING:". Fail loudly instead of
+// writing an invalid entry if the line ever leaves the gate.
+const length = [...LINE].length;
+if (
+  length < 1 ||
+  length > 160 ||
+  LINE.trim().length === 0 ||
+  LINE.includes("\n") ||
+  !LINE.startsWith("WARNING:")
+) {
+  throw new Error(`warning line must be a single WARNING: line of 1-160 characters, got ${length}`);
 }
 
 // Create the output dir if missing. Never chmod the dir itself: on the
